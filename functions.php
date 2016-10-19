@@ -1,13 +1,13 @@
 <?php 
 
-	require("../../../config.php");
+	require("/home/martreba/config.php");
 	
 	// see fail peab olema siis seotud kõigiga kus
 	// tahame sessiooni kasutada
 	// saab kasutada nüüd $_SESSION muutujat
 	session_start();
 	
-	$database = "if16_romil";
+	$database = "if16_martreba";
 	// functions.php
 	
 	function signup($email, $password) {
@@ -211,6 +211,51 @@
 		$mysqli->close();
 		
 		return $result;
+	}
+	
+	function saveUserInterest ($interest) {
+		
+		$mysqli = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUsername"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
+		
+		$stmt = $mysqli->prepare("
+		SELECT id FROM user_interests 
+		WHERE user_id=? AND interest_id=?
+		");
+		
+		$stmt->bind_param("ii", $_SESSION["userId"], $interest);
+		
+		$stmt->execute();
+		
+		//kas oli rida
+		if ($stmt->fetch())	{
+			
+			// oli olemas
+			echo "juba olemas";
+			//parast returni enam koodi ei vaadata
+			return;
+		}
+		
+		//kui ei olnud jouame siia
+		
+		$stmt->close();
+		
+		$stmt = $mysqli->prepare("INSERT INTO user_interests (user_id, interest_id)
+		VALUES (?, ?)
+		");
+	
+		echo $mysqli->error;
+		
+		$stmt->bind_param("ii", $_SESSION["userId"], $interest);
+		
+		if($stmt->execute()) {
+			echo "salvestamine õnnestus";
+		} else {
+		 	echo "ERROR ".$stmt->error;
+		}
+		
+		$stmt->close();
+		$mysqli->close();
+		
 	}
 	
 	
